@@ -1,6 +1,0 @@
-spring:
-  application:
-    name: backend_futurekawa
-
-server:
-  port: 8081

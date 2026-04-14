@@ -1,0 +1,12 @@
+package com.futurekawa.backend.service;
+
+import com.futurekawa.backend.model.dto.LotDto;
+
+import java.util.List;
+
+public interface LotService {
+    List<LotDto> getAllLots(String codePays);
+    LotDto getLotByFunctionalId(String codePays, String lotId);
+    List<LotDto> getLotsByEntrepot(String codePays, Long entrepotId);
+    List<LotDto> getAllLotsAllPays();
+}
