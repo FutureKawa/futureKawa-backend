@@ -33,21 +33,19 @@ public class LotController {
                 .build());
     }
 
-    @GetMapping("/{codePays}/lots/entrepot/{entrepotId}/paged")
-    public ResponseEntity<LotResponse> getLotsByEntrepotPaged(
+    @GetMapping("/{codePays}/lots/paged")
+    public ResponseEntity<LotResponse> getLotsPaged(
             @PathVariable String codePays,
-            @PathVariable Integer entrepotId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        LotPageFromBrazil pageResult = lotService.getLotsByEntrepotPaged(codePays, entrepotId, page, size);
+        LotPageFromBrazil pageResult = lotService.getLotsPaged(codePays, page, size);
 
         return ResponseEntity.ok(
                 LotResponse.builder()
                         .codePays(codePays.toUpperCase())
                         .lots(pageResult.getContent())
                         .total((int) pageResult.getTotalElements()) // total global
-                        // si tu veux, tu peux aussi ajouter page/size/totalPages dans LotResponse plus tard
                         .build()
         );
     }

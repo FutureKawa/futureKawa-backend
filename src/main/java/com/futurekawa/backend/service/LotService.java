@@ -10,5 +10,5 @@ public interface LotService {
     LotDto getLotByFunctionalId(String codePays, Long lotId);
     List<LotDto> getLotsByEntrepot(String codePays, Integer entrepotId);
 
-    LotPageFromBrazil getLotsByEntrepotPaged(String codePays, Integer entrepotId, int page, int size);
+    LotPageFromBrazil getLotsPaged(String codePays, int page, int size);
 }

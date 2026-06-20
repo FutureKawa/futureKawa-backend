@@ -147,11 +147,11 @@ public class LotServiceImpl implements LotService {
     }
 
     @Override
-    public LotPageFromBrazil getLotsByEntrepotPaged(String codePays, Integer entrepotId, int page, int size) {
+    public LotPageFromBrazil getLotsPaged(String codePays, int page, int size) {
         if (codePays.equalsIgnoreCase("BR")) {
             try {
                 String url = brasilUrl
-                        + "/api/lots/entrepot/" + entrepotId
+                        + "/api/lots"
                         + "?page=" + page
                         + "&size=" + size;
 
@@ -165,7 +165,7 @@ public class LotServiceImpl implements LotService {
                 return response.getBody() != null ? response.getBody() : emptyPage();
             } catch (Exception e) {
                 log.error("Backend Brésil indisponible pour getLotsByEntrepotPaged(entrepotId={}, page={}, size={}) : {}",
-                        entrepotId, page, size, e.getMessage());
+                        page, size, e.getMessage());
                 return emptyPage();
             }
         }
