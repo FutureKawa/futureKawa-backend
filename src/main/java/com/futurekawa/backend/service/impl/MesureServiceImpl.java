@@ -7,6 +7,7 @@ import com.futurekawa.backend.service.MesureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -89,17 +90,42 @@ public class MesureServiceImpl implements MesureService {
             }
         } else if (codePays.equalsIgnoreCase("EC")) {
             final LotDto lot = lotService.getLotByFunctionalId(codePays, lotId);
-            final List<MesureDto> mesureDtos = MESURES_EC.getOrDefault(lotId, Collections.emptyList());
+
+            if (lot == null || lot.getEntrepotId() == null || lot.getDateStockage() == null) {
+                return Collections.emptyList();
+            }
+
+            final List<MesureDto> mesureDtos = MESURES_EC.getOrDefault(
+                    lot.getEntrepotId().longValue(),
+                    Collections.emptyList()
+            );
+
             return mesureDtos.stream()
-                    .filter(m -> m.getEntrepotId().equals(lot.getEntrepotId()))
-                    .filter(m -> m.getTimestamp().isAfter(lot.getDateStockage().atStartOfDay()))
+                    .filter(Objects::nonNull)
+                    .filter(m -> m.getEntrepotId() != null)
+                    .filter(m -> Objects.equals(m.getEntrepotId(), lot.getEntrepotId()))
+                    .filter(m -> m.getTimestamp() != null)
+                    .filter(m -> !m.getTimestamp().isBefore(lot.getDateStockage().atStartOfDay()))
                     .toList();
+
         } else if (codePays.equalsIgnoreCase("CO")) {
             final LotDto lot = lotService.getLotByFunctionalId(codePays, lotId);
-            final List<MesureDto> mesureDtos = MESURES_CO.getOrDefault(lotId, Collections.emptyList());
+
+            if (lot == null || lot.getEntrepotId() == null || lot.getDateStockage() == null) {
+                return Collections.emptyList();
+            }
+
+            final List<MesureDto> mesureDtos = MESURES_CO.getOrDefault(
+                    lot.getEntrepotId().longValue(),
+                    Collections.emptyList()
+            );
+
             return mesureDtos.stream()
-                    .filter(m -> m.getEntrepotId().equals(lot.getEntrepotId()))
-                    .filter(m -> m.getTimestamp().isAfter(lot.getDateStockage().atStartOfDay()))
+                    .filter(Objects::nonNull)
+                    .filter(m -> m.getEntrepotId() != null)
+                    .filter(m -> Objects.equals(m.getEntrepotId(), lot.getEntrepotId()))
+                    .filter(m -> m.getTimestamp() != null)
+                    .filter(m -> !m.getTimestamp().isBefore(lot.getDateStockage().atStartOfDay()))
                     .toList();
         } else {
             throw new IllegalArgumentException("Pays inconnu : " + codePays);
