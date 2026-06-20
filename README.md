@@ -21,6 +21,7 @@
         - [DTO principaux](#dto-principaux)
         - [Responses](#responses)
     - [🧩 API REST exposée](#-api-rest-exposée)
+      - [Pagination des lots par entrepôt](#pagination-des-lots-par-entrepôt)
     - [⚙️ Configuration \& démarrage](#️-configuration--démarrage)
     - [🧭 Extension à d’autres pays](#-extension-à-dautres-pays)
 
@@ -234,9 +235,28 @@ GET /api/entrepots/all
 
 ```http
 GET /api/{codePays}/lots
-GET /api/{codePays}/lots/entrepot/{entrepotId}
 GET /api/{codePays}/lots/search?lotId={lotId}
+GET /api/{codePays}/lots/entrepot/{entrepotId}/paged?page={page}&size={size}
 ```
+
+#### Pagination des lots par entrepôt
+
+Un endpoint paginé permet de récupérer les lots d’un entrepôt donné sans charger toute la liste en mémoire.
+
+```http
+GET /api/{codePays}/lots/entrepot/{entrepotId}/paged?page=0&size=20
+```
+
+Exemple pour le Brésil :
+
+```http
+GET /api/BR/lots/entrepot/1/paged?page=0&size=20
+```
+
+- `page` : index de la page, en base 0.
+- `size` : nombre maximum d’éléments retournés.
+- Cet endpoint est actuellement branché sur le backend **Brazil**, qui expose déjà une pagination côté API.
+- Le backend société mère consomme cette réponse paginée via un modèle dédié `LotPageFromBrazil`.
 
 ### Mesures
 

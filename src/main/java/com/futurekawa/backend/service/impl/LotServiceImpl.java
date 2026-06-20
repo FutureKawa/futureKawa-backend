@@ -3,17 +3,19 @@ package com.futurekawa.backend.service.impl;
 import com.futurekawa.backend.enums.CafeType;
 import com.futurekawa.backend.enums.LotStatut;
 import com.futurekawa.backend.model.dto.LotDto;
+import com.futurekawa.backend.model.dto.LotPageFromBrazil;
 import com.futurekawa.backend.model.response.LotResponse;
 import com.futurekawa.backend.service.LotService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -142,5 +144,43 @@ public class LotServiceImpl implements LotService {
         } else {
             throw new IllegalArgumentException("Pays inconnu : " + codePays);
         }
+    }
+
+    @Override
+    public LotPageFromBrazil getLotsByEntrepotPaged(String codePays, Integer entrepotId, int page, int size) {
+        if (codePays.equalsIgnoreCase("BR")) {
+            try {
+                String url = brasilUrl
+                        + "/api/lots/entrepot/" + entrepotId
+                        + "?page=" + page
+                        + "&size=" + size;
+
+                ResponseEntity<LotPageFromBrazil> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<LotPageFromBrazil>() {}
+                );
+
+                return response.getBody() != null ? response.getBody() : emptyPage();
+            } catch (Exception e) {
+                log.error("Backend Brésil indisponible pour getLotsByEntrepotPaged(entrepotId={}, page={}, size={}) : {}",
+                        entrepotId, page, size, e.getMessage());
+                return emptyPage();
+            }
+        }
+        throw new IllegalArgumentException("Pagination par entrepôt non supportée pour le pays : " + codePays);
+    }
+
+    private LotPageFromBrazil emptyPage() {
+        LotPageFromBrazil p = new LotPageFromBrazil();
+        p.setContent(List.of());
+        p.setNumber(0);
+        p.setSize(0);
+        p.setTotalElements(0);
+        p.setTotalPages(0);
+        p.setFirst(true);
+        p.setLast(true);
+        return p;
     }
 }

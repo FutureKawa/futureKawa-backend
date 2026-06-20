@@ -1,6 +1,7 @@
 package com.futurekawa.backend.controller;
 
 import com.futurekawa.backend.model.dto.LotDto;
+import com.futurekawa.backend.model.dto.LotPageFromBrazil;
 import com.futurekawa.backend.model.response.LotResponse;
 import com.futurekawa.backend.service.LotService;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,6 @@ public class LotController {
         this.lotService = lotService;
     }
 
-    // todo : add pagination
     @GetMapping("/{codePays}/lots")
     public ResponseEntity<LotResponse> getAllLots(@PathVariable String codePays) {
         List<LotDto> lots = lotService.getAllLots(codePays);
@@ -31,6 +31,25 @@ public class LotController {
                 .total(lots.size())
                 .codePays(codePays.toUpperCase())
                 .build());
+    }
+
+    @GetMapping("/{codePays}/lots/entrepot/{entrepotId}/paged")
+    public ResponseEntity<LotResponse> getLotsByEntrepotPaged(
+            @PathVariable String codePays,
+            @PathVariable Integer entrepotId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        LotPageFromBrazil pageResult = lotService.getLotsByEntrepotPaged(codePays, entrepotId, page, size);
+
+        return ResponseEntity.ok(
+                LotResponse.builder()
+                        .codePays(codePays.toUpperCase())
+                        .lots(pageResult.getContent())
+                        .total((int) pageResult.getTotalElements()) // total global
+                        // si tu veux, tu peux aussi ajouter page/size/totalPages dans LotResponse plus tard
+                        .build()
+        );
     }
 
     @GetMapping("/{codePays}/lots/search")
