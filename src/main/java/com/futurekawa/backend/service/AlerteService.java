@@ -8,4 +8,6 @@ public interface AlerteService {
     List<AlerteDto> getAllAlertes(String codePays);
     List<AlerteDto> getAlertesByLot(String codePays, Long lotId);
     List<AlerteDto> getAllAlertesAllPays();
+
+    List<AlerteDto> getAlertesByEntrepot(String codePays, Integer entrepotId);
 }

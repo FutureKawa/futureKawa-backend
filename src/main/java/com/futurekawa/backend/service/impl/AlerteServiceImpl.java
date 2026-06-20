@@ -1,10 +1,12 @@
 package com.futurekawa.backend.service.impl;
 
+import com.futurekawa.backend.enums.AlerteType;
 import com.futurekawa.backend.model.dto.AlerteDto;
 import com.futurekawa.backend.service.AlerteService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -26,33 +28,43 @@ public class AlerteServiceImpl implements AlerteService {
 
     static {
         ALERTES_EC = List.of(
-            AlerteDto.builder()
-                .id(10L).lotId(101L).lotIdFonctionnel("LOT-ECU-2024-002").codePays("EC")
-                .typeAlerte("IOT").traitee(false)
-                .dateAlerte(LocalDateTime.of(2024, 11, 1, 10, 0))
-                .message("Température hors plage : 35.2°C (seuil max : 34°C)")
-                .build(),
-            AlerteDto.builder()
-                .id(11L).lotId(102L).lotIdFonctionnel("LOT-ECU-2023-001").codePays("EC")
-                .typeAlerte("ANCIENNETE").traitee(false)
-                .dateAlerte(LocalDateTime.of(2024, 11, 1, 8, 0))
-                .message("Lot stocké depuis plus de 365 jours")
-                .build()
+                AlerteDto.builder()
+                        .id(10)
+                        .entrepotId(null)
+                        .lotId(101L)
+                        .type(AlerteType.LOT_PERIME)
+                        .dateAlerte(LocalDateTime.of(2024, 11, 3, 8, 0))
+                        .validation(false)
+                        .build(),
+
+                AlerteDto.builder()
+                        .id(11)
+                        .entrepotId(1)
+                        .lotId(null)
+                        .type(AlerteType.TEMPERATURE_ENTREPOT)
+                        .dateAlerte(LocalDateTime.of(2024, 11, 1, 8, 0))
+                        .validation(false)
+                        .build()
         );
 
         ALERTES_CO = List.of(
-            AlerteDto.builder()
-                .id(20L).lotId(201L).lotIdFonctionnel("LOT-COL-2024-002").codePays("CO")
-                .typeAlerte("IOT").traitee(false)
-                .dateAlerte(LocalDateTime.of(2024, 11, 1, 10, 0))
-                .message("Température hors plage : 22.1°C (seuil min : 23°C)")
-                .build(),
-            AlerteDto.builder()
-                .id(21L).lotId(202L).lotIdFonctionnel("LOT-COL-2023-001").codePays("CO")
-                .typeAlerte("ANCIENNETE").traitee(false)
-                .dateAlerte(LocalDateTime.of(2024, 11, 1, 8, 0))
-                .message("Lot stocké depuis plus de 365 jours")
-                .build()
+                AlerteDto.builder()
+                        .id(20)
+                        .entrepotId(2)
+                        .lotId(null)
+                        .type(AlerteType.HUMIDITE_ENTREPOT)
+                        .dateAlerte(LocalDateTime.of(2024, 11, 3, 8, 0))
+                        .validation(false)
+                        .build(),
+
+                AlerteDto.builder()
+                        .id(21)
+                        .entrepotId(1)
+                        .lotId(null)
+                        .type(AlerteType.MESURE_ENTREPOT)
+                        .dateAlerte(LocalDateTime.of(2024, 11, 1, 8, 0))
+                        .validation(false)
+                        .build()
         );
     }
 
@@ -95,11 +107,11 @@ public class AlerteServiceImpl implements AlerteService {
             }
         } else if (codePays.equalsIgnoreCase("EC")) {
             return ALERTES_EC.stream()
-                    .filter(a -> a.getLotId().equals(lotId))
+                    .filter(a -> !ObjectUtils.isEmpty(a.getLotId()) && a.getLotId().equals(lotId))
                     .collect(Collectors.toList());
         } else if (codePays.equalsIgnoreCase("CO")) {
             return ALERTES_CO.stream()
-                    .filter(a -> a.getLotId().equals(lotId))
+                    .filter(a -> !ObjectUtils.isEmpty(a.getLotId()) && a.getLotId().equals(lotId))
                     .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Pays inconnu : " + codePays);
@@ -113,5 +125,29 @@ public class AlerteServiceImpl implements AlerteService {
         all.addAll(getAllAlertes("EC"));
         all.addAll(getAllAlertes("CO"));
         return all;
+    }
+
+    @Override
+    public List<AlerteDto> getAlertesByEntrepot(String codePays, Integer entrepotId) {
+        if (codePays.equalsIgnoreCase("BR")) {
+            try {
+                AlerteDto[] result = restTemplate.getForObject(
+                        brasilUrl + "/api/alertes/entrepot/" + entrepotId, AlerteDto[].class);
+                return result != null ? Arrays.asList(result) : Collections.emptyList();
+            } catch (Exception e) {
+                log.error("Backend Brésil indisponible pour getAlertesByLot({}) : {}", entrepotId, e.getMessage());
+                return Collections.emptyList();
+            }
+        } else if (codePays.equalsIgnoreCase("EC")) {
+            return ALERTES_EC.stream()
+                    .filter(a -> !ObjectUtils.isEmpty(a.getEntrepotId()) && a.getEntrepotId().equals(entrepotId))
+                    .collect(Collectors.toList());
+        } else if (codePays.equalsIgnoreCase("CO")) {
+            return ALERTES_CO.stream()
+                    .filter(a -> !ObjectUtils.isEmpty(a.getEntrepotId()) && a.getEntrepotId().equals(entrepotId))
+                    .collect(Collectors.toList());
+        } else {
+            throw new IllegalArgumentException("Pays inconnu : " + codePays);
+        }
     }
 }

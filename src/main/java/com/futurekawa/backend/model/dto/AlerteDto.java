@@ -1,6 +1,7 @@
 package com.futurekawa.backend.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.futurekawa.backend.enums.AlerteType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,13 +14,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AlerteDto {
-    private Long id;
+    private Integer id;
+    private Integer entrepotId;
     private Long lotId;
-    private String lotIdFonctionnel;
-    private String codePays;
-    private String typeAlerte;
-    private String message;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private AlerteType type;
     private LocalDateTime dateAlerte;
-    private Boolean traitee;
+    private Boolean validation;
 }

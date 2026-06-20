@@ -42,6 +42,17 @@ public class AlerteController {
                 .build());
     }
 
+    @GetMapping("/{codePays}/alertes/entrepot/{entrepotId}")
+    public ResponseEntity<AlerteResponse> getAlertesByEntrepot(@PathVariable String codePays,
+                                                               @PathVariable Integer entrepotId) {
+        List<AlerteDto> alertes = alerteService.getAlertesByEntrepot(codePays, entrepotId);
+        return ResponseEntity.ok(AlerteResponse.builder()
+                .alertes(alertes)
+                .total(alertes.size())
+                .codePays(codePays.toUpperCase())
+                .build());
+    }
+
     @GetMapping("/alertes/all")
     public ResponseEntity<List<AlerteDto>> getAllAlertesAllPays() {
         return ResponseEntity.ok(alerteService.getAllAlertesAllPays());
