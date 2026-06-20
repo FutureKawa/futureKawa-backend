@@ -1,6 +1,7 @@
 package com.futurekawa.backend.controller;
 
 import com.futurekawa.backend.model.dto.EntrepotDto;
+import com.futurekawa.backend.model.response.EntrepotONEResponse;
 import com.futurekawa.backend.model.response.EntrepotResponse;
 import com.futurekawa.backend.service.EntrepotService;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,8 @@ public class EntrepotController {
     }
 
     @GetMapping("/{codePays}/entrepots/{id}")
-    public ResponseEntity<EntrepotDto> getEntrepotById(@PathVariable String codePays,
-                                                        @PathVariable Long id) {
+    public ResponseEntity<EntrepotONEResponse> getEntrepotById(@PathVariable String codePays,
+                                                               @PathVariable Long id) {
         return ResponseEntity.ok(entrepotService.getEntrepotById(codePays, id));
     }
 
