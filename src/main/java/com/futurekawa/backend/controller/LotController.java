@@ -22,6 +22,7 @@ public class LotController {
         this.lotService = lotService;
     }
 
+    // todo : add pagination
     @GetMapping("/{codePays}/lots")
     public ResponseEntity<LotResponse> getAllLots(@PathVariable String codePays) {
         List<LotDto> lots = lotService.getAllLots(codePays);
@@ -34,23 +35,18 @@ public class LotController {
 
     @GetMapping("/{codePays}/lots/search")
     public ResponseEntity<LotDto> getLotByFunctionalId(@PathVariable String codePays,
-                                                        @RequestParam String lotId) {
+                                                        @RequestParam Long lotId) {
         return ResponseEntity.ok(lotService.getLotByFunctionalId(codePays, lotId));
     }
 
     @GetMapping("/{codePays}/lots/entrepot/{entrepotId}")
     public ResponseEntity<LotResponse> getLotsByEntrepot(@PathVariable String codePays,
-                                                          @PathVariable Long entrepotId) {
+                                                          @PathVariable Integer entrepotId) {
         List<LotDto> lots = lotService.getLotsByEntrepot(codePays, entrepotId);
         return ResponseEntity.ok(LotResponse.builder()
                 .lots(lots)
                 .total(lots.size())
                 .codePays(codePays.toUpperCase())
                 .build());
-    }
-
-    @GetMapping("/lots/all")
-    public ResponseEntity<List<LotDto>> getAllLotsAllPays() {
-        return ResponseEntity.ok(lotService.getAllLotsAllPays());
     }
 }

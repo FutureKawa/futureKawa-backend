@@ -1,6 +1,9 @@
 package com.futurekawa.backend.service.impl;
 
+import com.futurekawa.backend.enums.CafeType;
+import com.futurekawa.backend.enums.LotStatut;
 import com.futurekawa.backend.model.dto.LotDto;
+import com.futurekawa.backend.model.response.LotResponse;
 import com.futurekawa.backend.service.LotService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,45 +31,45 @@ public class LotServiceImpl implements LotService {
 
     static {
         LOTS_EC = List.of(
-            LotDto.builder().id(100L).lotId("LOT-ECU-2024-001").codePays("EC")
-                .entrepotId(10L).nomEntrepot("Quito Central").typeCafe("ARABICA")
-                .poids(850.0).dateStockage(LocalDateTime.of(2024, 1, 15, 8, 0)).statut("CONFORME").build(),
-            LotDto.builder().id(101L).lotId("LOT-ECU-2024-002").codePays("EC")
-                .entrepotId(10L).nomEntrepot("Quito Central").typeCafe("ROBUSTA")
-                .poids(1200.0).dateStockage(LocalDateTime.of(2024, 3, 20, 8, 0)).statut("EN_ALERTE").build(),
-            LotDto.builder().id(102L).lotId("LOT-ECU-2023-001").codePays("EC")
-                .entrepotId(10L).nomEntrepot("Quito Central").typeCafe("PREMIUM")
-                .poids(600.0).dateStockage(LocalDateTime.of(2023, 6, 10, 8, 0)).statut("PERIME").build(),
-            LotDto.builder().id(103L).lotId("LOT-ECU-2024-003").codePays("EC")
-                .entrepotId(11L).nomEntrepot("Guayaquil Sud").typeCafe("ARABICA")
-                .poids(950.0).dateStockage(LocalDateTime.of(2024, 5, 1, 8, 0)).statut("CONFORME").build(),
-            LotDto.builder().id(104L).lotId("LOT-ECU-2024-004").codePays("EC")
-                .entrepotId(11L).nomEntrepot("Guayaquil Sud").typeCafe("ROBUSTA")
-                .poids(750.0).dateStockage(LocalDateTime.of(2024, 8, 15, 8, 0)).statut("CONFORME").build(),
-            LotDto.builder().id(105L).lotId("LOT-ECU-2023-002").codePays("EC")
-                .entrepotId(11L).nomEntrepot("Guayaquil Sud").typeCafe("PREMIUM")
-                .poids(500.0).dateStockage(LocalDateTime.of(2023, 9, 20, 8, 0)).statut("PERIME").build()
+            LotDto.builder().id(100L)
+                .entrepotId(1).entrepotNom("Quito Central").typeCafe(CafeType.ARABICA)
+                .poidsKg(850.0).dateStockage(LocalDate.of(2024, 1, 15)).statut(LotStatut.CONFORME).build(),
+            LotDto.builder().id(101L)
+                .entrepotId(1).entrepotNom("Quito Central").typeCafe(CafeType.ROBUSTA)
+                .poidsKg(1200.0).dateStockage(LocalDate.of(2024, 3, 20)).statut(LotStatut.PERIME).build(),
+            LotDto.builder().id(102L)
+                .entrepotId(1).entrepotNom("Quito Central").typeCafe(CafeType.PREMIUM)
+                .poidsKg(600.0).dateStockage(LocalDate.of(2023, 6, 10)).statut(LotStatut.PERIME).build(),
+            LotDto.builder().id(103L)
+                .entrepotId(2).entrepotNom("Guayaquil Sud").typeCafe(CafeType.ARABICA)
+                .poidsKg(950.0).dateStockage(LocalDate.of(2024, 5, 10)).statut(LotStatut.CONFORME).build(),
+            LotDto.builder().id(104L)
+                .entrepotId(2).entrepotNom("Guayaquil Sud").typeCafe(CafeType.ROBUSTA)
+                .poidsKg(750.0).dateStockage(LocalDate.of(2024, 8, 15)).statut(LotStatut.CONFORME).build(),
+            LotDto.builder().id(105L)
+                .entrepotId(2).entrepotNom("Guayaquil Sud").typeCafe(CafeType.PREMIUM)
+                .poidsKg(500.0).dateStockage(LocalDate.of(2023, 9, 20)).statut(LotStatut.PERIME).build()
         );
 
         LOTS_CO = List.of(
-            LotDto.builder().id(200L).lotId("LOT-COL-2024-001").codePays("CO")
-                .entrepotId(20L).nomEntrepot("Bogotá Est").typeCafe("ARABICA")
-                .poids(1100.0).dateStockage(LocalDateTime.of(2024, 2, 10, 8, 0)).statut("CONFORME").build(),
-            LotDto.builder().id(201L).lotId("LOT-COL-2024-002").codePays("CO")
-                .entrepotId(20L).nomEntrepot("Bogotá Est").typeCafe("PREMIUM")
-                .poids(800.0).dateStockage(LocalDateTime.of(2024, 4, 25, 8, 0)).statut("EN_ALERTE").build(),
-            LotDto.builder().id(202L).lotId("LOT-COL-2023-001").codePays("CO")
-                .entrepotId(20L).nomEntrepot("Bogotá Est").typeCafe("ROBUSTA")
-                .poids(650.0).dateStockage(LocalDateTime.of(2023, 7, 14, 8, 0)).statut("PERIME").build(),
-            LotDto.builder().id(203L).lotId("LOT-COL-2024-003").codePays("CO")
-                .entrepotId(21L).nomEntrepot("Medellín Nord").typeCafe("ROBUSTA")
-                .poids(900.0).dateStockage(LocalDateTime.of(2024, 6, 1, 8, 0)).statut("CONFORME").build(),
-            LotDto.builder().id(204L).lotId("LOT-COL-2024-004").codePays("CO")
-                .entrepotId(21L).nomEntrepot("Medellín Nord").typeCafe("ARABICA")
-                .poids(1050.0).dateStockage(LocalDateTime.of(2024, 9, 10, 8, 0)).statut("CONFORME").build(),
-            LotDto.builder().id(205L).lotId("LOT-COL-2023-002").codePays("CO")
-                .entrepotId(21L).nomEntrepot("Medellín Nord").typeCafe("PREMIUM")
-                .poids(700.0).dateStockage(LocalDateTime.of(2023, 10, 5, 8, 0)).statut("PERIME").build()
+            LotDto.builder().id(200L)
+                .entrepotId(1).entrepotNom("Bogotá Est").typeCafe(CafeType.ARABICA)
+                .poidsKg(1100.0).dateStockage(LocalDate.of(2024, 2, 10)).statut(LotStatut.CONFORME).build(),
+            LotDto.builder().id(201L)
+                .entrepotId(1).entrepotNom("Bogotá Est").typeCafe(CafeType.PREMIUM)
+                .poidsKg(800.0).dateStockage(LocalDate.of(2024, 4, 25)).statut(LotStatut.A_EXPEDIER).build(),
+            LotDto.builder().id(202L)
+                .entrepotId(1).entrepotNom("Bogotá Est").typeCafe(CafeType.ROBUSTA)
+                .poidsKg(650.0).dateStockage(LocalDate.of(2023, 7, 14)).statut(LotStatut.PERIME).build(),
+            LotDto.builder().id(203L)
+                .entrepotId(2).entrepotNom("Medellín Nord").typeCafe(CafeType.ROBUSTA)
+                .poidsKg(900.0).dateStockage(LocalDate.of(2024, 6, 1)).statut(LotStatut.CONFORME).build(),
+            LotDto.builder().id(204L)
+                .entrepotId(2).entrepotNom("Medellín Nord").typeCafe(CafeType.ARABICA)
+                .poidsKg(1050.0).dateStockage(LocalDate.of(2024, 9, 10)).statut(LotStatut.CONFORME).build(),
+            LotDto.builder().id(205L)
+                .entrepotId(2).entrepotNom("Medellín Nord").typeCafe(CafeType.PREMIUM)
+                .poidsKg(700.0).dateStockage(LocalDate.of(2023, 10, 5)).statut(LotStatut.PERIME).build()
         );
     }
 
@@ -95,7 +99,7 @@ public class LotServiceImpl implements LotService {
     }
 
     @Override
-    public LotDto getLotByFunctionalId(String codePays, String lotId) {
+    public LotDto getLotByFunctionalId(String codePays, Long lotId) {
         if (codePays.equalsIgnoreCase("BR")) {
             try {
                 String url = UriComponentsBuilder.fromUriString(brasilUrl + "/api/lots/search")
@@ -107,21 +111,22 @@ public class LotServiceImpl implements LotService {
                 return null;
             }
         } else if (codePays.equalsIgnoreCase("EC")) {
-            return LOTS_EC.stream().filter(l -> l.getLotId().equals(lotId)).findFirst().orElse(null);
+            return LOTS_EC.stream().filter(l -> l.getId().equals(lotId)).findFirst().orElse(null);
         } else if (codePays.equalsIgnoreCase("CO")) {
-            return LOTS_CO.stream().filter(l -> l.getLotId().equals(lotId)).findFirst().orElse(null);
+            return LOTS_CO.stream().filter(l -> l.getId().equals(lotId)).findFirst().orElse(null);
         } else {
             throw new IllegalArgumentException("Pays inconnu : " + codePays);
         }
     }
 
     @Override
-    public List<LotDto> getLotsByEntrepot(String codePays, Long entrepotId) {
+    public List<LotDto> getLotsByEntrepot(String codePays, Integer entrepotId) {
         if (codePays.equalsIgnoreCase("BR")) {
             try {
                 LotDto[] result = restTemplate.getForObject(
-                        brasilUrl + "/api/lots/entrepot/" + entrepotId, LotDto[].class);
-                return result != null ? Arrays.asList(result) : Collections.emptyList();
+                        brasilUrl + "/api/lots/fifo/" + entrepotId, LotDto[].class);
+                final List<LotDto> lots = result != null ? Arrays.asList(result) : Collections.emptyList();
+                return LotResponse.from(lots, codePays).getLots();
             } catch (Exception e) {
                 log.error("Backend Brésil indisponible pour getLotsByEntrepot({}) : {}", entrepotId, e.getMessage());
                 return Collections.emptyList();
@@ -137,14 +142,5 @@ public class LotServiceImpl implements LotService {
         } else {
             throw new IllegalArgumentException("Pays inconnu : " + codePays);
         }
-    }
-
-    @Override
-    public List<LotDto> getAllLotsAllPays() {
-        List<LotDto> all = new ArrayList<>();
-        all.addAll(getAllLots("BR"));
-        all.addAll(getAllLots("EC"));
-        all.addAll(getAllLots("CO"));
-        return all;
     }
 }

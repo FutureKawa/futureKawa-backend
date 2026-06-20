@@ -1,11 +1,15 @@
 package com.futurekawa.backend.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.futurekawa.backend.enums.CafeType;
+import com.futurekawa.backend.enums.LotStatut;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -14,13 +18,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LotDto {
     private Long id;
-    private String lotId;
-    private String codePays;
-    private Long entrepotId;
-    private String nomEntrepot;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime dateStockage;
-    private String statut;
-    private Double poids;
-    private String typeCafe;
+    private Integer entrepotId;
+    private String entrepotNom;
+    private CafeType typeCafe;
+    private LocalDate dateStockage;
+    private LotStatut statut;
+    private Double poidsKg;
+    private Integer joursRestants;
+    private LocalDateTime dateMaj;
 }

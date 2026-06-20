@@ -6,7 +6,6 @@ import java.util.List;
 
 public interface LotService {
     List<LotDto> getAllLots(String codePays);
-    LotDto getLotByFunctionalId(String codePays, String lotId);
-    List<LotDto> getLotsByEntrepot(String codePays, Long entrepotId);
-    List<LotDto> getAllLotsAllPays();
+    LotDto getLotByFunctionalId(String codePays, Long lotId);
+    List<LotDto> getLotsByEntrepot(String codePays, Integer entrepotId);
 }
