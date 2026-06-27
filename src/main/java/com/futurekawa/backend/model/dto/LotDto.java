@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LotDto {
     private Long id;
+    private String code;
     private Integer entrepotId;
     private String entrepotNom;
     private CafeType typeCafe;
