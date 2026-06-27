@@ -33,43 +33,43 @@ public class LotServiceImpl implements LotService {
 
     static {
         LOTS_EC = List.of(
-            LotDto.builder().id(100L)
+            LotDto.builder().id(100L).code("ECU-2024-100")
                 .entrepotId(1).entrepotNom("Quito Central").typeCafe(CafeType.ARABICA)
                 .poidsKg(850.0).dateStockage(LocalDate.of(2024, 1, 15)).statut(LotStatut.CONFORME).build(),
-            LotDto.builder().id(101L)
+            LotDto.builder().id(101L).code("ECU-2024-101")
                 .entrepotId(1).entrepotNom("Quito Central").typeCafe(CafeType.ROBUSTA)
                 .poidsKg(1200.0).dateStockage(LocalDate.of(2024, 3, 20)).statut(LotStatut.PERIME).build(),
-            LotDto.builder().id(102L)
+            LotDto.builder().id(102L).code("ECU-2024-102")
                 .entrepotId(1).entrepotNom("Quito Central").typeCafe(CafeType.PREMIUM)
                 .poidsKg(600.0).dateStockage(LocalDate.of(2023, 6, 10)).statut(LotStatut.PERIME).build(),
-            LotDto.builder().id(103L)
+            LotDto.builder().id(103L).code("ECU-2024-103")
                 .entrepotId(2).entrepotNom("Guayaquil Sud").typeCafe(CafeType.ARABICA)
                 .poidsKg(950.0).dateStockage(LocalDate.of(2024, 5, 10)).statut(LotStatut.CONFORME).build(),
-            LotDto.builder().id(104L)
+            LotDto.builder().id(104L).code("ECU-2024-104")
                 .entrepotId(2).entrepotNom("Guayaquil Sud").typeCafe(CafeType.ROBUSTA)
                 .poidsKg(750.0).dateStockage(LocalDate.of(2024, 8, 15)).statut(LotStatut.CONFORME).build(),
-            LotDto.builder().id(105L)
+            LotDto.builder().id(105L).code("ECU-2024-105")
                 .entrepotId(2).entrepotNom("Guayaquil Sud").typeCafe(CafeType.PREMIUM)
                 .poidsKg(500.0).dateStockage(LocalDate.of(2023, 9, 20)).statut(LotStatut.PERIME).build()
         );
 
         LOTS_CO = List.of(
-            LotDto.builder().id(200L)
+            LotDto.builder().id(200L).code("COL-2024-200")
                 .entrepotId(1).entrepotNom("Bogotá Est").typeCafe(CafeType.ARABICA)
                 .poidsKg(1100.0).dateStockage(LocalDate.of(2024, 2, 10)).statut(LotStatut.CONFORME).build(),
-            LotDto.builder().id(201L)
+            LotDto.builder().id(201L).code("COL-2024-201")
                 .entrepotId(1).entrepotNom("Bogotá Est").typeCafe(CafeType.PREMIUM)
                 .poidsKg(800.0).dateStockage(LocalDate.of(2024, 4, 25)).statut(LotStatut.A_EXPEDIER).build(),
-            LotDto.builder().id(202L)
+            LotDto.builder().id(202L).code("COL-2024-202")
                 .entrepotId(1).entrepotNom("Bogotá Est").typeCafe(CafeType.ROBUSTA)
                 .poidsKg(650.0).dateStockage(LocalDate.of(2023, 7, 14)).statut(LotStatut.PERIME).build(),
-            LotDto.builder().id(203L)
+            LotDto.builder().id(203L).code("COL-2024-203")
                 .entrepotId(2).entrepotNom("Medellín Nord").typeCafe(CafeType.ROBUSTA)
                 .poidsKg(900.0).dateStockage(LocalDate.of(2024, 6, 1)).statut(LotStatut.CONFORME).build(),
-            LotDto.builder().id(204L)
+            LotDto.builder().id(204L).code("COL-2024-204")
                 .entrepotId(2).entrepotNom("Medellín Nord").typeCafe(CafeType.ARABICA)
                 .poidsKg(1050.0).dateStockage(LocalDate.of(2024, 9, 10)).statut(LotStatut.CONFORME).build(),
-            LotDto.builder().id(205L)
+            LotDto.builder().id(205L).code("COL-2024-205")
                 .entrepotId(2).entrepotNom("Medellín Nord").typeCafe(CafeType.PREMIUM)
                 .poidsKg(700.0).dateStockage(LocalDate.of(2023, 10, 5)).statut(LotStatut.PERIME).build()
         );
@@ -85,8 +85,18 @@ public class LotServiceImpl implements LotService {
     public List<LotDto> getAllLots(String codePays) {
         if (codePays.equalsIgnoreCase("BR")) {
             try {
-                LotDto[] result = restTemplate.getForObject(brasilUrl + "/api/lots", LotDto[].class);
-                return result != null ? Arrays.asList(result) : Collections.emptyList();
+                // Le backend Brésil expose /api/lots sous forme paginée (Spring Page : {"content":[...]}).
+                // On demande une grande taille pour tout récupérer puis on renvoie le contenu.
+                ResponseEntity<LotPageFromBrazil> response = restTemplate.exchange(
+                        brasilUrl + "/api/lots?page=0&size=1000",
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<LotPageFromBrazil>() {}
+                );
+                LotPageFromBrazil body = response.getBody();
+                return (body != null && body.getContent() != null)
+                        ? body.getContent()
+                        : Collections.emptyList();
             } catch (Exception e) {
                 log.error("Backend Brésil indisponible pour getAllLots : {}", e.getMessage());
                 return Collections.emptyList();
@@ -153,7 +163,8 @@ public class LotServiceImpl implements LotService {
                 String url = brasilUrl
                         + "/api/lots"
                         + "?page=" + page
-                        + "&size=" + size;
+                        + "&size=" + size
+                        + "&sort=dateStockage,asc"; // priorité FIFO : plus anciens d'abord
 
                 ResponseEntity<LotPageFromBrazil> response = restTemplate.exchange(
                         url,

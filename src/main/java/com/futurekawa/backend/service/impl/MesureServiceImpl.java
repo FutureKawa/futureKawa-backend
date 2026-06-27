@@ -131,4 +131,24 @@ public class MesureServiceImpl implements MesureService {
             throw new IllegalArgumentException("Pays inconnu : " + codePays);
         }
     }
+
+    @Override
+    public List<MesureDto> getMesuresByEntrepot(String codePays, Integer entrepotId) {
+        if (codePays.equalsIgnoreCase("BR")) {
+            try {
+                MesureDto[] result = restTemplate.getForObject(
+                        brasilUrl + "/api/mesures/entrepot/" + entrepotId, MesureDto[].class);
+                return result != null ? Arrays.asList(result) : Collections.emptyList();
+            } catch (Exception e) {
+                log.error("Backend Brésil indisponible pour getMesuresByEntrepot({}) : {}", entrepotId, e.getMessage());
+                return Collections.emptyList();
+            }
+        } else if (codePays.equalsIgnoreCase("EC")) {
+            return MESURES_EC.getOrDefault(entrepotId.longValue(), Collections.emptyList());
+        } else if (codePays.equalsIgnoreCase("CO")) {
+            return MESURES_CO.getOrDefault(entrepotId.longValue(), Collections.emptyList());
+        } else {
+            throw new IllegalArgumentException("Pays inconnu : " + codePays);
+        }
+    }
 }

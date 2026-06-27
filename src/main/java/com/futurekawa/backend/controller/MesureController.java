@@ -31,4 +31,10 @@ public class MesureController {
                 .lotId(lotId)
                 .build());
     }
+
+    @GetMapping("/{codePays}/mesures/entrepot/{entrepotId}")
+    public ResponseEntity<List<MesureDto>> getMesuresByEntrepot(@PathVariable String codePays,
+                                                                @PathVariable Integer entrepotId) {
+        return ResponseEntity.ok(mesureService.getMesuresByEntrepot(codePays, entrepotId));
+    }
 }
