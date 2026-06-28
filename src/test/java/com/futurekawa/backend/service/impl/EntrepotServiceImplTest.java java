@@ -1,0 +1,163 @@
+package com.futurekawa.backend.service.impl;
+
+import com.futurekawa.backend.model.dto.EntrepotDto;
+import com.futurekawa.backend.model.response.EntrepotONEResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("Tests unitaires - EntrepotServiceImpl")
+class EntrepotServiceImplTest {
+
+    @Mock
+    private RestTemplate restTemplate;
+
+    private EntrepotServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        service = new EntrepotServiceImpl(restTemplate, "http://localhost:8081");
+    }
+
+    @Nested
+    @DisplayName("getAllEntrepots")
+    class GetAllEntrepotsTests {
+
+        @Test
+        @DisplayName("Doit retourner les entrepôts du Brésil si le backend répond")
+        void shouldReturnBrazilWarehouses() {
+            EntrepotDto[] backendResponse = new EntrepotDto[]{
+                    EntrepotDto.builder().id(1L).nom("Sao Paulo").build(),
+                    EntrepotDto.builder().id(2L).nom("Rio").build()
+            };
+
+            when(restTemplate.getForObject(
+                    "http://localhost:8081/api/entrepots",
+                    EntrepotDto[].class
+            )).thenReturn(backendResponse);
+
+            List<EntrepotDto> result = service.getAllEntrepots("BR");
+
+            assertNotNull(result);
+            assertEquals(2, result.size());
+        }
+
+        @Test
+        @DisplayName("Doit retourner une liste vide si le backend Brésil échoue")
+        void shouldReturnEmptyListWhenBrazilBackendFails() {
+            when(restTemplate.getForObject(
+                    "http://localhost:8081/api/entrepots",
+                    EntrepotDto[].class
+            )).thenThrow(new RuntimeException("Backend down"));
+
+            List<EntrepotDto> result = service.getAllEntrepots("BR");
+
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Doit retourner les entrepôts statiques de l'Équateur")
+        void shouldReturnEcuadorWarehouses() {
+            List<EntrepotDto> result = service.getAllEntrepots("EC");
+
+            assertNotNull(result);
+            assertEquals(2, result.size());
+        }
+
+        @Test
+        @DisplayName("Doit retourner les entrepôts statiques de la Colombie")
+        void shouldReturnColombiaWarehouses() {
+            List<EntrepotDto> result = service.getAllEntrepots("CO");
+
+            assertNotNull(result);
+            assertEquals(2, result.size());
+        }
+
+        @Test
+        @DisplayName("Doit lever une exception si le pays est inconnu")
+        void shouldThrowExceptionWhenCountryIsUnknown() {
+            assertThrows(IllegalArgumentException.class, () -> service.getAllEntrepots("XX"));
+        }
+    }
+
+    @Nested
+    @DisplayName("getEntrepotById")
+    class GetEntrepotByIdTests {
+
+        @Test
+        @DisplayName("Doit retourner un entrepôt du Brésil par id")
+        void shouldReturnBrazilWarehouseById() {
+            EntrepotONEResponse response = new EntrepotONEResponse();
+            when(restTemplate.getForObject(
+                    "http://localhost:8081/api/entrepots/1",
+                    EntrepotONEResponse.class
+            )).thenReturn(response);
+
+            EntrepotONEResponse result = service.getEntrepotById("BR", 1L);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        @DisplayName("Doit retourner null si le backend Brésil échoue sur la recherche par id")
+        void shouldReturnNullWhenBrazilBackendFailsById() {
+            when(restTemplate.getForObject(
+                    "http://localhost:8081/api/entrepots/1",
+                    EntrepotONEResponse.class
+            )).thenThrow(new RuntimeException("Backend down"));
+
+            EntrepotONEResponse result = service.getEntrepotById("BR", 1L);
+
+            assertNull(result);
+        }
+
+        @Test
+        @DisplayName("Doit retourner la fiche d'un entrepôt équatorien")
+        void shouldReturnEcuadorWarehouseById() {
+            EntrepotONEResponse result = service.getEntrepotById("EC", 1L);
+
+            assertNotNull(result);
+        }
+
+        @Test
+        @DisplayName("Doit retourner la fiche d'un entrepôt colombien")
+        void shouldReturnColombiaWarehouseById() {
+            EntrepotONEResponse result = service.getEntrepotById("CO", 1L);
+
+            assertNotNull(result);
+        }
+    }
+
+    @Nested
+    @DisplayName("getAllEntrepotsAllPays")
+    class GetAllEntrepotsAllPaysTests {
+
+        @Test
+        @DisplayName("Doit agréger tous les entrepôts de tous les pays")
+        void shouldAggregateAllWarehouses() {
+            when(restTemplate.getForObject(
+                    "http://localhost:8081/api/entrepots",
+                    EntrepotDto[].class
+            )).thenReturn(new EntrepotDto[]{
+                    EntrepotDto.builder().id(1L).nom("BR1").build()
+            });
+
+            List<EntrepotDto> result = service.getAllEntrepotsAllPays();
+
+            assertNotNull(result);
+            assertEquals(5, result.size());
+        }
+    }
+}
